@@ -495,17 +495,22 @@
     <script>
         function generateQR() {
             const url = document.getElementById('pageUrl').value.trim();
-            
+
             if (!url) {
                 alert('Please enter a URL first');
                 return;
             }
 
             // Clear previous QR code
-            document.getElementById('qrcode').innerHTML = '';
-            
-            // Generate new QR code
-            QRCode.toCanvas(document.getElementById('qrcode'), url, {
+            const container = document.getElementById('qrcode');
+            container.innerHTML = '';
+
+            // Create a canvas element and pass it to the library (the loaded `qrcode` package
+            // expects a canvas element for `toCanvas`, not a container div).
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            QRCode.toCanvas(canvas, url, {
                 width: 300,
                 margin: 2,
                 color: {
