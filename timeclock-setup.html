@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Clock Setup - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --accent: #00ff88;
+            --warning: #ff3366;
+            --surface: #1a1f3a;
+            --text: #e8eaf6;
+            --text-dim: #9499b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #0f1535 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 51, 102, 0.1) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-5%, -5%) rotate(5deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), #00ddff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: var(--primary);
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .code-block {
+            background: var(--primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        ol li {
+            margin-bottom: 12px;
+            color: var(--text-dim);
+        }
+
+        ol li strong {
+            color: var(--text);
+        }
+
+        .qr-section {
+            text-align: center;
+            padding: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1);
+        }
+
+        .btn {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--accent), #00dd99);
+            color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 255, 136, 0.3);
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            margin: 24px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .qr-instruction {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-top: 16px;
+        }
+
+        .download-btn {
+            margin-top: 16px;
+            background: var(--primary);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 32px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-link:hover {
+            opacity: 0.7;
+        }
+
+        .warning-box {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            color: var(--warning);
+            font-size: 14px;
+        }
+
+        .success-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            color: var(--accent);
+            font-size: 14px;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        a:hover {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 24px;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Admin Setup</h1>
+            <p>Configure your employee time clock system</p>
+        </div>
+
+        <!-- Step 1: Google Sheets Setup -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-number">1</span>
+                Set Up Google Sheets
+            </div>
+            
+            <ol>
+                <li><strong>Create a new Google Sheet</strong> - Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a></li>
+                <li><strong>Name your sheet</strong> - Something like "Employee Time Records"</li>
+                <li><strong>Add headers</strong> in row 1:
+                    <div class="code-block">
+                        A1: Timestamp | B1: Employee Name | C1: Action | D1: Date | E1: Time
+                    </div>
+                </li>
+                <li><strong>Go to Extensions → Apps Script</strong></li>
+                <li><strong>Delete any existing code</strong> and paste this script:</li>
+            </ol>
+
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode('gasCode')">Copy</button>
+                <pre id="gasCode">function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data = JSON.parse(e.postData.contents);
+    
+    const timestamp = new Date(data.timestamp);
+    const date = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    const time = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "HH:mm:ss");
+    
+    sheet.appendRow([
+      timestamp,
+      data.name,
+      data.action.toUpperCase(),
+      date,
+      time
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'success',
+      'message': 'Time logged successfully'
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      'status': 'error',
+      'message': error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+            </div>
+
+            <ol start="6">
+                <li><strong>Click "Deploy" → "New deployment"</strong></li>
+                <li><strong>Click the gear icon</strong> next to "Select type" and choose <strong>"Web app"</strong></li>
+                <li><strong>Configure deployment:</strong>
+                    <ul style="margin-top: 8px; margin-left: 20px;">
+                        <li>Description: "Time Clock API"</li>
+                        <li>Execute as: <strong>Me</strong></li>
+                        <li>Who has access: <strong>Anyone</strong></li>
+                    </ul>
+                </li>
+                <li><strong>Click "Deploy"</strong></li>
+                <li><strong>Authorize the app</strong> (you may need to click "Advanced" → "Go to [Project name]")</li>
+                <li><strong>Copy the Web app URL</strong> - it looks like:<br>
+                    <code style="color: var(--warning);">https://script.google.com/macros/s/ABC123.../exec</code>
+                </li>
+            </ol>
+
+            <div class="success-box">
+                ✓ Keep this URL safe - you'll need it in the next step!
+            </div>
+        </div>
+
+        <!-- Step 2: Configure the Time Clock -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-number">2</span>
+                Configure Time Clock Page
+            </div>
+            
+            <ol>
+                <li><strong>Open the file</strong> <code>employee-timeclock.html</code> in a text editor</li>
+                <li><strong>Find this line</strong> (around line 245):
+                    <div class="code-block">
+                        const SHEETS_URL = 'YOUR_GOOGLE_SHEETS_WEB_APP_URL_HERE';
+                    </div>
+                </li>
+                <li><strong>Replace</strong> <code>YOUR_GOOGLE_SHEETS_WEB_APP_URL_HERE</code> with your Web app URL from Step 1</li>
+                <li><strong>Save the file</strong></li>
+            </ol>
+
+            <div class="warning-box">
+                ⚠️ Make sure to keep the single quotes around the URL!
+            </div>
+        </div>
+
+        <!-- Step 3: Generate QR Code -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-number">3</span>
+                Generate QR Code
+            </div>
+            
+            <div class="form-group">
+                <label for="pageUrl">Enter the URL where you'll host the time clock page:</label>
+                <input 
+                    type="url" 
+                    id="pageUrl" 
+                    placeholder="https://yourwebsite.com/employee-timeclock.html"
+                    value=""
+                >
+            </div>
+
+            <button class="btn" onclick="generateQR()">Generate QR Code</button>
+
+            <div class="qr-section">
+                <div id="qrcode"></div>
+                <div class="qr-instruction">
+                    Employees can scan this QR code with their phones to access the time clock
+                </div>
+                <button class="btn download-btn" id="downloadBtn" style="display: none;" onclick="downloadQR()">
+                    Download QR Code
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Deployment Options -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-number">4</span>
+                Deployment Options
+            </div>
+            
+            <p style="margin-bottom: 16px; color: var(--text-dim);">Choose how you want to make the time clock accessible:</p>
+
+            <div style="margin-bottom: 24px;">
+                <strong style="color: var(--accent);">Option A: Free Web Hosting</strong>
+                <ol style="margin-top: 8px;">
+                    <li>Upload <code>employee-timeclock.html</code> to <a href="https://netlify.com" target="_blank">Netlify</a>, <a href="https://vercel.com" target="_blank">Vercel</a>, or <a href="https://pages.github.com" target="_blank">GitHub Pages</a></li>
+                    <li>They'll give you a free URL like <code>yourcompany.netlify.app</code></li>
+                    <li>Use this URL in Step 3 to generate your QR code</li>
+                </ol>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <strong style="color: var(--accent);">Option B: Local Network (Tablet/Computer)</strong>
+                <ol style="margin-top: 8px;">
+                    <li>Save <code>employee-timeclock.html</code> on a computer/tablet at your workplace</li>
+                    <li>Open it in a web browser</li>
+                    <li>Bookmark the page for easy access</li>
+                    <li>Employees use the device to clock in/out</li>
+                </ol>
+            </div>
+
+            <div>
+                <strong style="color: var(--accent);">Option C: Custom Domain</strong>
+                <ol style="margin-top: 8px;">
+                    <li>Upload to your existing website hosting</li>
+                    <li>Place it at <code>yourdomain.com/timeclock</code></li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Step 5: Usage -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-number">5</span>
+                You're All Set! 🎉
+            </div>
+            
+            <p style="color: var(--text-dim); margin-bottom: 16px;">Here's how your employees will use the system:</p>
+            
+            <ol>
+                <li>Scan the QR code with their phone (or visit the URL directly)</li>
+                <li>Enter their full name</li>
+                <li>Click "Clock In" when arriving or "Clock Out" when leaving</li>
+                <li>All records are automatically saved to your Google Sheet with timestamps</li>
+            </ol>
+
+            <div class="success-box" style="margin-top: 24px;">
+                ✓ Access your records anytime by opening your Google Sheet<br>
+                ✓ Export to Excel whenever you need<br>
+                ✓ Automatic backups by Google
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="employee-timeclock.html" class="back-link">← Back to Time Clock</a>
+        </div>
+    </div>
+
+    <script>
+        function generateQR() {
+            const url = document.getElementById('pageUrl').value.trim();
+            
+            if (!url) {
+                alert('Please enter a URL first');
+                return;
+            }
+
+            // Clear previous QR code
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Generate new QR code
+            QRCode.toCanvas(document.getElementById('qrcode'), url, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#0a0e27',
+                    light: '#ffffff'
+                }
+            }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR code');
+                } else {
+                    document.getElementById('downloadBtn').style.display = 'inline-block';
+                }
+            });
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                alert('Please generate a QR code first');
+                return;
+            }
+
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'timeclock-qr-code.png';
+            link.href = url;
+            link.click();
+        }
+
+        function copyCode(elementId) {
+            const code = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Auto-fill with current page URL if opened locally
+        window.addEventListener('load', () => {
+            const currentUrl = window.location.href.replace('timeclock-setup.html', 'employee-timeclock.html');
+            if (currentUrl.startsWith('http')) {
+                document.getElementById('pageUrl').value = currentUrl;
+            }
+        });
+    </script>
+</body>
+</html>

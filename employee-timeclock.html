@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Time Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0e27;
+            --accent: #00ff88;
+            --warning: #ff3366;
+            --surface: #1a1f3a;
+            --text: #e8eaf6;
+            --text-dim: #9499b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #0f1535 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 51, 102, 0.1) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-5%, -5%) rotate(5deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            width: 100%;
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), #00ddff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+
+        .time-display {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .current-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .current-date {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        button {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-in {
+            background: linear-gradient(135deg, var(--accent), #00dd99);
+            color: var(--primary);
+        }
+
+        .btn-in:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-out {
+            background: linear-gradient(135deg, var(--warning), #ff5588);
+            color: white;
+        }
+
+        .btn-out:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(255, 51, 102, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-message {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .status-message.error {
+            background: rgba(255, 51, 102, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+        }
+
+        .setup-link {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setup-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 13px;
+            transition: opacity 0.3s ease;
+        }
+
+        .setup-link a:hover {
+            opacity: 0.7;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>⏱ TIMECLOCK</h1>
+            <p>Track your work hours</p>
+        </div>
+
+        <div class="time-display">
+            <div class="current-time" id="currentTime">--:--:--</div>
+            <div class="current-date" id="currentDate">Loading...</div>
+        </div>
+
+        <form id="clockForm">
+            <div class="form-group">
+                <label for="employeeName">Employee Name</label>
+                <input 
+                    type="text" 
+                    id="employeeName" 
+                    placeholder="Enter your full name"
+                    required
+                    autocomplete="name"
+                >
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-in" id="clockInBtn">
+                    Clock In
+                </button>
+                <button type="button" class="btn-out" id="clockOutBtn">
+                    Clock Out
+                </button>
+            </div>
+        </form>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="setup-link">
+            <a href="timeclock-setup.html">⚙️ Admin Setup & QR Code</a>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - REPLACE THIS WITH YOUR GOOGLE SHEETS WEB APP URL
+        const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwbt8O7M-n964klM3OiOr_cgBuMDTVlg2TApgFNbi7Ftq-IGpyYepxZIcGMiK9wm1V4/exec';
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            
+            const dateString = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        // Initialize clock
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type} show`;
+            
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 4000);
+        }
+
+        // Submit time entry
+        async function submitTimeEntry(action) {
+            const employeeName = document.getElementById('employeeName').value.trim();
+            
+            if (!employeeName) {
+                showStatus('Please enter your name', 'error');
+                return;
+            }
+
+            const clockInBtn = document.getElementById('clockInBtn');
+            const clockOutBtn = document.getElementById('clockOutBtn');
+            const originalText = action === 'in' ? 'Clock In' : 'Clock Out';
+            const button = action === 'in' ? clockInBtn : clockOutBtn;
+
+            // Disable buttons and show loading
+            clockInBtn.disabled = true;
+            clockOutBtn.disabled = true;
+            button.innerHTML = originalText + ' <span class="spinner"></span>';
+
+            try {
+                const timestamp = new Date().toISOString();
+                
+                // Check if SHEETS_URL is configured
+                if (SHEETS_URL === 'YOUR_GOOGLE_SHEETS_WEB_APP_URL_HERE') {
+                    throw new Error('Google Sheets not configured. Please set up in Admin Setup.');
+                }
+
+                const response = await fetch(SHEETS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: employeeName,
+                        action: action,
+                        timestamp: timestamp
+                    })
+                });
+
+                // Since we're using no-cors, we can't read the response
+                // Assume success if no error was thrown
+                const actionText = action === 'in' ? 'clocked in' : 'clocked out';
+                showStatus(`✓ Successfully ${actionText}!`, 'success');
+                
+                // Clear the input after successful submission
+                document.getElementById('employeeName').value = '';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(error.message || 'Error submitting. Please try again.', 'error');
+            } finally {
+                // Re-enable buttons
+                clockInBtn.disabled = false;
+                clockOutBtn.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('clockInBtn').addEventListener('click', () => submitTimeEntry('in'));
+        document.getElementById('clockOutBtn').addEventListener('click', () => submitTimeEntry('out'));
+
+        // Allow Enter key to submit
+        document.getElementById('employeeName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('clockInBtn').click();
+            }
+        });
+    </script>
+</body>
+</html>
